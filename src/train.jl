@@ -1,6 +1,6 @@
 using CUDAnative
 using CUDAnative:exp,log
-# device!(1)
+device!(2)
 println("Device Selected")
 
 using Images,CuArrays,Flux
@@ -41,11 +41,13 @@ include("layers.jl")
 include("generator.jl")
 include("discriminator.jl")
 
-BASE_PATH = "../../data/"
+BASE_PATH = "../../../references/srgan/"
 HR_PATH = string(BASE_PATH,"DIV2K_train_HR/")
 LR_PATH = string(BASE_PATH,"DIV2K_train_LR_bicubic/X4/")
 
 img_HR,img_LR = load_dataset(HR_PATH,LR_PATH)
+img_HR = img_HR[1:NUM_EXAMPLES]
+img_LR = img_LR[1:NUM_EXAMPLES]
 mb_idxs = partition(shuffle!(collect(1:length(img_HR))), BATCH_SIZE)
 train_HR_batches = [img_HR[i] for i in mb_idxs]
 train_LR_batches = [img_LR[i] for i in mb_idxs]
@@ -113,7 +115,7 @@ function train()
         println("-----------Epoch : $epoch-----------")
 
         for i in 1:length(train_HR_batches)
-			X_HR,X_LR = get_batch(train_HR_batch[i],train_LR_batch[i],H,W)
+			X_HR,X_LR = get_batch(train_HR_batches[i],train_LR_batches[i],H,W)
 
             train_step(X_HR |> gpu,X_LR |> gpu)
         end
